@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Study Shelf</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e17;--surface:#1a1929;--surface2:#232235;--accent:#ff6b35;--accent2:#7c5cbf;--accent3:#34d399;--text:#fffffe;--text2:#a7a9be;--border:rgba(255,255,255,0.08);--card:#1e1d2e;--danger:#ff4d6d;--warn:#f9c74f}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;user-select:none}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s,transform .6s}
+#splash.hide{opacity:0;transform:scale(1.05);pointer-events:none}
+.splash-icon{width:96px;height:96px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:20px;box-shadow:0 0 60px rgba(255,107,53,.4);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 40px rgba(255,107,53,.4)}50%{box-shadow:0 0 80px rgba(255,107,53,.7)}}
+.splash-title{font-size:36px;font-weight:800;letter-spacing:-1px}
+.splash-title span{color:var(--accent)}
+.splash-sub{color:var(--text2);margin-top:8px;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-family:'Space Mono',monospace}
+.splash-bar{width:200px;height:3px;background:var(--surface2);border-radius:99px;margin-top:40px;overflow:hidden}
+.splash-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;animation:loadbar 1.8s ease forwards}
+@keyframes loadbar{from{width:0}to{width:100%}}
+
+/* APP SHELL */
+#app{display:none;flex-direction:column;height:100vh}
+#app.show{display:flex}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--border);z-index:10;flex-shrink:0}
+.topbar-logo{display:flex;align-items:center;gap:10px;cursor:pointer}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.logo-text{font-weight:700;font-size:18px}
+.logo-text b{color:var(--accent);font-weight:800}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.menu-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px 12px;border-radius:10px;font-size:12px;cursor:pointer;transition:all .2s;font-family:'Space Mono',monospace}
+.menu-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* PAGES */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px}
+.page{display:none;animation:fadeIn .3s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* BOTTOM NAV */
+.bottomnav{display:flex;background:var(--surface);border-top:1px solid var(--border);padding:8px 4px 10px;flex-shrink:0;position:relative;z-index:10}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:8px 0;color:var(--text2);font-size:11px;font-weight:500;transition:color .2s;border:none;background:none;font-family:'Outfit',sans-serif}
+.nav-item .ni{font-size:22px;line-height:1}
+.nav-item.active{color:var(--accent)}
+.nav-item.active .ni-bg{background:rgba(255,107,53,.12);border-radius:10px;padding:2px 12px}
+
+/* HOME */
+.greeting{font-size:22px;font-weight:700;margin-bottom:4px}
+.greeting span{color:var(--accent)}
+.greeting-sub{color:var(--text2);font-size:13px;margin-bottom:20px}
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;text-align:center;cursor:pointer;transition:all .2s}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.sval{font-size:28px;font-weight:800;font-family:'Space Mono',monospace}
+.slbl{font-size:11px;color:var(--text2);margin-top:2px}
+.stat-card:nth-child(1) .sval{color:var(--accent)}
+.stat-card:nth-child(2) .sval{color:var(--accent2)}
+.stat-card:nth-child(3) .sval{color:var(--accent3)}
+.sec-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:12px;font-family:'Space Mono',monospace}
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.qa-btn{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px}
+.qa-btn:hover{border-color:var(--accent);background:rgba(255,107,53,.05)}
+.qa-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.qa-icon.o{background:rgba(255,107,53,.15)}
+.qa-icon.p{background:rgba(124,92,191,.15)}
+.qa-icon.g{background:rgba(52,211,153,.15)}
+.qa-icon.y{background:rgba(249,199,79,.15)}
+.qt{font-size:13px;font-weight:600}
+.qs{font-size:11px;color:var(--text2);margin-top:1px}
+.today-card{background:linear-gradient(135deg,rgba(255,107,53,.1),rgba(124,92,191,.1));border:1px solid rgba(255,107,53,.2);border-radius:16px;padding:16px;margin-bottom:20px}
+.today-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.today-title{font-size:14px;font-weight:700}
+.today-day{font-size:11px;color:var(--text2);font-family:'Space Mono',monospace}
+.today-class{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.today-class:last-child{border-bottom:none}
+.tc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tc-sub{font-size:13px;font-weight:600}
+.tc-time{font-size:11px;color:var(--text2);font-family:'Space Mono',monospace}
+
+/* EMPTY STATE */
+.empty-s{text-align:center;padding:30px 20px;color:var(--text2)}
+.empty-s .ei{font-size:40px;margin-bottom:10px}
+.empty-s .et{font-size:14px;font-weight:600;color:var(--text)}
+.empty-s .es{font-size:12px;margin-top:4px}
+
+/* TIMETABLE */
+.tt-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.tt-title{font-size:20px;font-weight:700}
+.btn-p{background:var(--accent);color:#fff;border:none;padding:10px 16px;border-radius:12px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:filter .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-p:hover{filter:brightness(1.15)}
+.btn-p:disabled{filter:brightness(.6);cursor:not-allowed}
+.btn-s{background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:9px 14px;border-radius:12px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-s:hover{border-color:var(--accent2);color:var(--accent2)}
+.day-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none}
+.day-tabs::-webkit-scrollbar{display:none}
+.day-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.day-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.class-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:border-color .2s}
+.class-card:hover{border-color:rgba(255,107,53,.4)}
+.class-bar{width:4px;height:48px;border-radius:99px;flex-shrink:0}
+.class-info{flex:1;min-width:0}
+.class-name{font-size:15px;font-weight:600}
+.class-meta{font-size:12px;color:var(--text2);margin-top:3px;font-family:'Space Mono',monospace}
+.class-room{font-size:11px;color:var(--text2);margin-top:2px}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .2s;flex-shrink:0}
+.icon-btn:hover{border-color:var(--danger);background:rgba(255,77,109,.15)}
+
+/* TT IMAGE */
+.tt-img-box{background:var(--card);border:2px dashed var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden;position:relative;transition:all .3s ease}
+.tt-img-box.has-img{border-style:solid;border-color:var(--accent2)}
+
+/* COMPACT state — small pill-like bar */
+.tt-img-placeholder{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:background .2s}
+.tt-img-placeholder:hover{background:rgba(124,92,191,.08)}
+.tt-img-box.has-img .tt-img-placeholder{display:none}
+
+/* EXPANDED state — full size upload zone */
+.tt-img-placeholder.expanded{flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;gap:0}
+.tt-img-placeholder.expanded .upload-icon{font-size:40px;margin-bottom:10px}
+.tt-img-placeholder.expanded .upload-txt{font-size:14px;text-align:center}
+.tt-img-placeholder.expanded .upload-collapse{display:flex}
+
+/* Icon and text in compact mode */
+.upload-icon{font-size:20px;flex-shrink:0;margin-bottom:0;transition:font-size .2s}
+.upload-txt{color:var(--text2);font-size:13px;flex:1}
+.upload-txt b{color:var(--accent2)}
+
+/* Collapse button shown only when expanded */
+.upload-collapse{display:none;align-items:center;justify-content:center;width:28px;height:28px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:14px;flex-shrink:0;cursor:pointer;margin-left:auto}
+
+/* Uploaded image — small thumbnail, click to expand */
+.tt-img-box.has-img{padding:10px;display:flex;align-items:center;gap:12px;cursor:default;border-style:solid;border-color:var(--accent2)}
+.tt-img-thumb{width:72px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;cursor:pointer;transition:transform .2s,box-shadow .2s;display:block}
+.tt-img-thumb:hover{transform:scale(1.06);box-shadow:0 4px 20px rgba(124,92,191,.4)}
+.tt-img-info{flex:1;min-width:0}
+.tt-img-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.tt-img-hint{font-size:11px;color:var(--text2)}
+.tt-img-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.tt-img-act-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:5px 10px;font-size:11px;font-family:'Outfit',sans-serif;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tt-img-act-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+.tt-img-act-btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+/* old overlay not needed when using thumbnail mode */
+.tt-img-overlay{display:none}
+
+/* NOTES */
+.search-bar{background:var(--surface2);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:16px}
+.search-bar input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px}
+.search-bar input::placeholder{color:var(--text2)}
+.subj-filter{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none}
+.subj-filter::-webkit-scrollbar{display:none}
+.subj-chip{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.subj-chip.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.note-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.note-card:hover{border-color:var(--accent2);transform:translateY(-2px)}
+.note-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.note-card.pdf::before{background:var(--danger)}
+.note-card.img::before{background:var(--accent3)}
+.note-card.doc::before{background:var(--accent2)}
+.note-card.other::before{background:var(--warn)}
+.note-icon{font-size:28px;margin-bottom:8px}
+.note-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.note-sub{font-size:11px;color:var(--text2);margin-top:3px}
+.note-sz{font-size:10px;color:var(--text2);margin-top:6px;font-family:'Space Mono',monospace}
+.note-del{position:absolute;top:8px;right:8px;width:26px;height:26px;background:rgba(255,77,109,.15);border:1px solid rgba(255,77,109,.3);border-radius:6px;color:var(--danger);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.note-card:hover .note-del{opacity:1}
+
+/* SUBJECTS PAGE */
+.subject-list{display:flex;flex-direction:column;gap:10px}
+.subject-row{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:14px}
+.subject-row:hover{border-color:var(--accent2);transform:translateX(4px)}
+.subj-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.subj-row-name{font-size:15px;font-weight:600;flex:1}
+.subj-row-count{font-size:11px;color:var(--text2);font-family:'Space Mono',monospace}
+.subj-detail-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.back-btn{width:36px;height:36px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;flex-shrink:0}
+.subj-detail-title{font-size:20px;font-weight:700}
+.subj-section{margin-bottom:24px}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;visibility:hidden}
+.modal-overlay.show{opacity:1;pointer-events:all;visibility:visible}
+.modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s}
+.modal-overlay.show .modal{transform:translateY(0)}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-ttl{font-size:18px;font-weight:700}
+.modal-x{width:32px;height:32px;border-radius:8px;background:var(--surface2);border:none;color:var(--text2);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif}
+.fg{margin-bottom:14px}
+.fl{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block}
+.fi{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:11px 14px;font-family:'Outfit',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--accent)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cp-row{display:flex;gap:8px;flex-wrap:wrap}
+.cdot{width:28px;height:28px;border-radius:50%;cursor:pointer;transition:all .2s;border:2px solid transparent;flex-shrink:0}
+.cdot.sel{border-color:#fff;transform:scale(1.2)}
+.file-drop{background:var(--surface2);border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s}
+.file-drop:hover{border-color:var(--accent2)}
+.fd-icon{font-size:28px;margin-bottom:6px}
+.fd-txt{font-size:13px;color:var(--text2)}
+.fd-txt b{color:var(--accent2)}
+.fd-sel{font-size:12px;color:var(--accent3);margin-top:6px;font-weight:600}
+.btn-row{display:flex;gap:10px;margin-top:4px}
+.btn-row .btn-p,.btn-row .btn-s{flex:1;justify-content:center;text-align:center}
+
+/* CONFIRM DIALOG */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(8px);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s;visibility:hidden}
+.confirm-overlay.show{opacity:1;pointer-events:all;visibility:visible}
+.confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px 24px;width:100%;max-width:300px;text-align:center;transform:scale(.88) translateY(12px);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.confirm-overlay.show .confirm-box{transform:scale(1) translateY(0)}
+.confirm-icon{font-size:48px;display:block;margin-bottom:16px}
+.confirm-title{font-size:18px;font-weight:700;margin-bottom:8px}
+.confirm-msg{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:28px}
+.confirm-hl{color:var(--text);font-weight:600}
+.confirm-btns{display:flex;gap:10px}
+.confirm-cancel{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:14px;padding:13px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+.confirm-ok{flex:1;background:var(--danger);border:none;color:#fff;border-radius:14px;padding:13px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+
+/* IMAGE VIEWER */
+.img-viewer{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:500;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.img-viewer.show{display:flex}
+.img-viewer img{max-width:100%;max-height:75vh;border-radius:12px;object-fit:contain}
+.iv-acts{display:flex;gap:10px;margin-top:20px}
+.iv-close{position:absolute;top:16px;right:16px;width:40px;height:40px;background:var(--surface2);border:none;border-radius:50%;color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif}
+
+/* BACKUP PAGE */
+.bk-sec{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px}
+.bk-ttl{font-size:14px;font-weight:700;margin-bottom:4px}
+.bk-sub{font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5}
+
+/* SPINNER */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:6px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 18px;border-radius:12px;font-size:13px;font-weight:500;opacity:0;transition:all .3s;z-index:700;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* WA PROMPT */
+.wa-prompt{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--accent3);border-radius:16px;padding:14px 18px;display:none;z-index:600;min-width:280px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.wa-prompt.show{display:block;animation:sUp .3s}
+@keyframes sUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.wa-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.wa-ic{width:36px;height:36px;background:#25d366;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.wa-ttl{font-size:14px;font-weight:700}
+.wa-sub2{font-size:11px;color:var(--text2)}
+.wa-file{font-size:12px;color:var(--text2);margin-bottom:12px;padding:8px 12px;background:var(--surface2);border-radius:8px}
+.wa-btns{display:flex;gap:8px}
+.wa-save{flex:1;background:var(--accent3);color:#0f0e17;border:none;border-radius:10px;padding:9px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.wa-skip{background:var(--surface2);color:var(--text2);border:none;border-radius:10px;padding:9px 14px;font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer}
+
+.main::-webkit-scrollbar{width:4px}
+.main::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:99px}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-icon">📚</div>
+  <div class="splash-title">Study<span>Shelf</span></div>
+  <div class="splash-sub">Your smart study companion</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- WA PROMPT -->
+<div class="wa-prompt" id="wa-prompt">
+  <div class="wa-hdr"><div class="wa-ic">📲</div><div><div class="wa-ttl">Save to Study Shelf?</div><div class="wa-sub2">File received from external app</div></div></div>
+  <div class="wa-file" id="wa-file-nm">📄 document.pdf</div>
+  <div class="wa-btns"><button class="wa-save" onclick="saveWAFile()">📚 Save to Shelf</button><button class="wa-skip" onclick="dismissWA()">Skip</button></div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <span class="confirm-icon" id="c-icon">🗑️</span>
+    <div class="confirm-title" id="c-title">Are you sure?</div>
+    <div class="confirm-msg" id="c-msg">This cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="confirm-ok" id="c-ok-btn">Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE VIEWER -->
+<div class="img-viewer" id="img-viewer">
+  <button class="iv-close" onclick="closeViewer()">✕</button>
+  <img id="viewer-img" src="" alt="">
+  <div class="iv-acts" id="iv-acts">
+    <button class="btn-s" onclick="document.getElementById('tt-rep').click()">🔄 Replace</button>
+    <button class="btn-p" onclick="confirmRemoveTTImg()">🗑 Remove</button>
+  </div>
+</div>
+<input type="file" id="tt-rep" accept="image/*" onchange="replaceTTImg(event)" style="display:none">
+<input type="file" id="tt-img-in" accept="image/*" onchange="uploadTTImg(event)" style="display:none">
+<input type="file" id="n-file" onchange="selFile(event)" style="display:none">
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="topbar">
+    <!-- Clicking logo goes to home -->
+    <div class="topbar-logo" onclick="switchPage('home')">
+      <div class="logo-icon">📚</div>
+      <span class="logo-text">Study<b>Shelf</b></span>
+    </div>
+    <div class="topbar-right">
+
+      <button class="menu-btn" onclick="switchPage('backup')">⚙️ Backup</button>
+    </div>
+  </div>
+
+  <div class="main" id="main-scroll">
+
+    <!-- HOME PAGE -->
+    <div class="page active" id="page-home">
+      <div class="greeting">Hello, <span>Scholar! 👋</span></div>
+      <div class="greeting-sub" id="cur-date"></div>
+      <!-- Stat cards clickable: Classes→timetable, Notes→notes, Subjects→subjects page -->
+      <div class="stats-row">
+        <div class="stat-card" onclick="switchPage('timetable')" title="View all classes">
+          <div class="sval" id="st-cls">0</div><div class="slbl">Classes</div>
+        </div>
+        <div class="stat-card" onclick="switchPage('notes')" title="View all notes">
+          <div class="sval" id="st-nts">0</div><div class="slbl">Notes</div>
+        </div>
+        <div class="stat-card" onclick="switchPage('subjects')" title="View all subjects">
+          <div class="sval" id="st-sub">0</div><div class="slbl">Subjects</div>
+        </div>
+      </div>
+      <div class="sec-title">Quick Actions</div>
+      <div class="quick-actions">
+        <div class="qa-btn" onclick="showM('m-cls')"><div class="qa-icon o">📅</div><div><div class="qt">Add Class</div><div class="qs">Update timetable</div></div></div>
+        <div class="qa-btn" onclick="showM('m-note')"><div class="qa-icon p">📎</div><div><div class="qt">Add Note</div><div class="qs">Upload file</div></div></div>
+        <div class="qa-btn" onclick="switchPage('timetable')"><div class="qa-icon y">🖼️</div><div><div class="qt">Timetable</div><div class="qs">View schedule</div></div></div>
+        <div class="qa-btn" onclick="switchPage('notes')"><div class="qa-icon g">🔍</div><div><div class="qt">Search Notes</div><div class="qs">Find files fast</div></div></div>
+      </div>
+      <div class="sec-title">Today's Schedule</div>
+      <div class="today-card">
+        <div class="today-header"><div class="today-title">📆 Today's Classes</div><div class="today-day" id="td-day"></div></div>
+        <div id="td-list"></div>
+      </div>
+    </div>
+
+    <!-- TIMETABLE PAGE -->
+    <div class="page" id="page-timetable">
+      <div class="tt-header"><div class="tt-title">📅 Timetable</div><button class="btn-p" onclick="showM('m-cls')">+ Add Class</button></div>
+      <div class="sec-title">Timetable Image</div>
+      <div class="tt-img-box" id="tt-img-box">
+        <div class="tt-img-placeholder" id="tt-img-ph" onclick="ttImgPlaceholderClick(event)">
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-txt">Tap to <b>upload timetable photo</b></div>
+          <div class="upload-collapse" id="tt-img-collapse" onclick="event.stopPropagation();collapseTTImg()">✕</div>
+        </div>
+        <!-- Thumbnail view (shown when image uploaded) -->
+        <img id="tt-img-prev" class="tt-img-thumb" src="" alt="Timetable" style="display:none" onclick="openViewer('tt')" title="Click to view full size">
+        <div class="tt-img-info" id="tt-img-info" style="display:none">
+          <div class="tt-img-label">📅 Timetable Photo</div>
+          <div class="tt-img-hint">Tap image to view full size</div>
+        </div>
+        <div class="tt-img-actions" id="tt-img-actions" style="display:none">
+          <button class="tt-img-act-btn" onclick="openViewer('tt')">🔍 View</button>
+          <button class="tt-img-act-btn" onclick="document.getElementById('tt-rep').click()">🔄 Replace</button>
+          <button class="tt-img-act-btn danger" onclick="confirmRemoveTTImg()">🗑 Remove</button>
+        </div>
+        <div class="tt-img-overlay"></div>
+      </div>
+      <div class="sec-title" style="margin-top:16px">Weekly Schedule</div>
+      <div class="day-tabs" id="day-tabs">
+        <div class="day-tab active" data-d="Mon" onclick="selDay(this)">Mon</div>
+        <div class="day-tab" data-d="Tue" onclick="selDay(this)">Tue</div>
+        <div class="day-tab" data-d="Wed" onclick="selDay(this)">Wed</div>
+        <div class="day-tab" data-d="Thu" onclick="selDay(this)">Thu</div>
+        <div class="day-tab" data-d="Fri" onclick="selDay(this)">Fri</div>
+        <div class="day-tab" data-d="Sat" onclick="selDay(this)">Sat</div>
+        <div class="day-tab" data-d="All" onclick="selDay(this)">All</div>
+      </div>
+      <div id="cls-list"></div>
+    </div>
+
+    <!-- NOTES PAGE -->
+    <div class="page" id="page-notes">
+      <div class="tt-header"><div class="tt-title">📂 Notes</div><button class="btn-p" onclick="showM('m-note')">+ Add</button></div>
+      <div class="search-bar"><span style="color:var(--text2);font-size:16px">🔍</span><input type="text" id="srch" placeholder="Search by name or subject..." oninput="renderNotes()"></div>
+      <div class="subj-filter" id="subj-filter"><div class="subj-chip active" data-s="All" onclick="selSubj(this)">All</div></div>
+      <div class="note-grid" id="notes-grid"></div>
+    </div>
+
+    <!-- SUBJECTS PAGE -->
+    <div class="page" id="page-subjects">
+      <div class="tt-header"><div class="tt-title">📚 Subjects</div></div>
+      <div id="subjects-list"></div>
+    </div>
+
+    <!-- SUBJECT DETAIL PAGE -->
+    <div class="page" id="page-subject-detail">
+      <div class="subj-detail-header">
+        <div class="back-btn" onclick="switchPage('subjects')">←</div>
+        <div class="subj-detail-title" id="subj-detail-title">Subject</div>
+      </div>
+      <div id="subj-detail-content"></div>
+    </div>
+
+    <!-- BACKUP PAGE -->
+    <div class="page" id="page-backup">
+      <div class="tt-header"><div class="tt-title">⚙️ Backup</div><button class="btn-s" onclick="switchPage('home')">← Back</button></div>
+
+      <div class="bk-sec" style="border-color:rgba(249,199,79,.3)">
+        <div class="bk-ttl" style="color:var(--warn)">⚠️ Clear All Data</div>
+        <div class="bk-sub">Permanently deletes all classes and notes. Export a backup first!</div>
+        <button class="btn-p" style="background:var(--danger)" onclick="confirmClearAll()">Clear Everything</button>
+      </div>
+      <div class="bk-sec" style="border-color:rgba(37,211,102,.3)">
+        <div class="bk-ttl" style="color:var(--accent3)">📲 WhatsApp / App Share Demo</div>
+        <div class="bk-sub">Simulates a file coming from WhatsApp. In the real mobile build this uses Android Share Intent.</div>
+        <button class="btn-p" style="background:#25d366" onclick="simulateWA()">Simulate Incoming File</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- BOTTOM NAV — using <button> elements so they are always clickable -->
+  <div class="bottomnav">
+    <button class="nav-item active" id="nav-home"      onclick="switchPage('home')">      <div class="ni-bg"><div class="ni">🏠</div></div><span>Home</span></button>
+    <button class="nav-item"        id="nav-timetable" onclick="switchPage('timetable')"> <div class="ni-bg"><div class="ni">📅</div></div><span>Timetable</span></button>
+    <button class="nav-item"        id="nav-notes"     onclick="switchPage('notes')">     <div class="ni-bg"><div class="ni">📂</div></div><span>Notes</span></button>
+  </div>
+</div><!-- /app -->
+
+<!-- ADD CLASS MODAL -->
+<div class="modal-overlay" id="m-cls" onclick="closeMClick(event,'m-cls')">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-ttl">📅 Add Class</div><button class="modal-x" onclick="hideM('m-cls')">✕</button></div>
+    <div class="fg"><label class="fl">Subject Name</label><input class="fi" id="c-name" placeholder="e.g. Mathematics"></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Day</label><select class="fi" id="c-day"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option><option>Sat</option></select></div>
+      <div class="fg"><label class="fl">Start Time</label><input class="fi" id="c-start" type="time" value="09:00"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">End Time</label><input class="fi" id="c-end" type="time" value="10:00"></div>
+      <div class="fg"><label class="fl">Room (opt.)</label><input class="fi" id="c-room" placeholder="e.g. Lab 3"></div>
+    </div>
+    <div class="fg"><label class="fl">Color Tag</label>
+      <div class="cp-row">
+        <div class="cdot sel" style="background:#ff6b35" data-c="#ff6b35" onclick="selClr(this)"></div>
+        <div class="cdot" style="background:#7c5cbf" data-c="#7c5cbf" onclick="selClr(this)"></div>
+        <div class="cdot" style="background:#34d399" data-c="#34d399" onclick="selClr(this)"></div>
+        <div class="cdot" style="background:#f9c74f" data-c="#f9c74f" onclick="selClr(this)"></div>
+        <div class="cdot" style="background:#ff4d6d" data-c="#ff4d6d" onclick="selClr(this)"></div>
+        <div class="cdot" style="background:#38bdf8" data-c="#38bdf8" onclick="selClr(this)"></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-s" onclick="hideM('m-cls')">Cancel</button>
+      <button class="btn-p" id="cls-save-btn" onclick="addCls()">Add Class</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD NOTE MODAL -->
+<div class="modal-overlay" id="m-note" onclick="closeMClick(event,'m-note')">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-ttl">📎 Add Note</div><button class="modal-x" onclick="hideM('m-note')">✕</button></div>
+    <div class="fg"><label class="fl">Note Title</label><input class="fi" id="n-title" placeholder="e.g. Chapter 3 Summary"></div>
+    <div class="fg"><label class="fl">Subject</label><input class="fi" id="n-subj" placeholder="e.g. Physics" list="sdl"><datalist id="sdl"></datalist></div>
+    <div class="fg"><label class="fl">Attach File (optional)</label>
+      <div class="file-drop" onclick="document.getElementById('n-file').click()">
+        <div class="fd-icon">📁</div>
+        <div class="fd-txt">Tap to pick a file<br><b>PDF, Image, or Document</b></div>
+        <div class="fd-sel" id="fd-nm"></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-s" onclick="hideM('m-note')">Cancel</button>
+      <button class="btn-p" id="note-save-btn" onclick="addNote()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ════════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════════
+var API = 'http://localhost:5000/api';
+
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+var CLS = [], NTS = [];
+var TTI = localStorage.getItem('ss_i') || null;
+var selColor = '#ff6b35';
+var selFD = null, selFN = null, selFileObj = null;
+var dayFilt = 'Mon', subjFilt = 'All';
+var waFile = null, vMode = 'tt';
+var isOnline = false;
+var _pendingAction = null;
+var currentPage = 'home';
+
+// ════════════════════════════════════════════
+//  SPLASH → INIT
+// ════════════════════════════════════════════
+window.addEventListener('load', function () {
+  setTimeout(async function () {
+    document.getElementById('splash').classList.add('hide');
+    document.getElementById('app').classList.add('show');
+    await init();
+  }, 2300);
+});
+
+async function init() {
+  var now = new Date();
+  var DN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  document.getElementById('cur-date').textContent =
+    now.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('td-day').textContent = DN[now.getDay()];
+  // Set initial day tab to today's day
+  var todayName = DN[now.getDay()];
+  var validDays = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+  dayFilt = validDays.includes(todayName) ? todayName : 'Mon';
+  await checkConn();
+  await loadAll();
+}
+
+// ════════════════════════════════════════════
+//  CONNECTION
+// ════════════════════════════════════════════
+async function checkConn() {
+  try {
+    var res = await fetch(API + '/classes', { signal: AbortSignal.timeout(3000) });
+    if (res.ok) { isOnline = true; return; }
+  } catch (_) {}
+  isOnline = false;
+}
+
+async function apiFetch(path, opts) {
+  var res = await fetch(API + path, Object.assign({ headers:{'Content-Type':'application/json'} }, opts));
+  var d = await res.json();
+  if (!d.success) throw new Error(d.message);
+  return d;
+}
+
+// ════════════════════════════════════════════
+//  LOAD DATA
+// ════════════════════════════════════════════
+async function loadAll() {
+  try {
+    if (isOnline) { var dc = await apiFetch('/classes'); CLS = dc.data; localStorage.setItem('ss_c', JSON.stringify(CLS)); }
+    else throw 0;
+  } catch (_) {
+    CLS = JSON.parse(localStorage.getItem('ss_c') || '[]');
+    if (!CLS.length) seedData();
+  }
+  try {
+    if (isOnline) { var dn = await apiFetch('/notes'); NTS = dn.data; localStorage.setItem('ss_n', JSON.stringify(NTS)); }
+    else throw 0;
+  } catch (_) {
+    NTS = JSON.parse(localStorage.getItem('ss_n') || '[]');
+  }
+  renderAll();
+}
+
+function seedData() {
+  var DN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var t = DN[new Date().getDay()], tm = DN[(new Date().getDay()+1)%7];
+  CLS = [
+    {_id:'s1',name:'Mathematics',day:t,   start:'09:00',end:'10:00',room:'Room 101',color:'#ff6b35'},
+    {_id:'s2',name:'Physics',    day:t,   start:'10:30',end:'11:30',room:'Lab 2',   color:'#7c5cbf'},
+    {_id:'s3',name:'Chemistry',  day:tm,  start:'08:00',end:'09:00',room:'Lab 1',   color:'#34d399'},
+    {_id:'s4',name:'English',    day:'Wed',start:'11:00',end:'12:00',room:'Room 203',color:'#38bdf8'}
+  ];
+  NTS = [
+    {_id:'n1',title:'Calculus Cheat Sheet',subject:'Mathematics',type:'pdf',fileName:'calc.pdf',  size:'240 KB'},
+    {_id:'n2',title:'Newton Laws Diagram', subject:'Physics',    type:'img',fileName:'newton.png',size:'120 KB'},
+    {_id:'n3',title:'Organic Chem Notes',  subject:'Chemistry',  type:'doc',fileName:'ochem.docx',size:'310 KB'}
+  ];
+  localStorage.setItem('ss_c', JSON.stringify(CLS));
+  localStorage.setItem('ss_n', JSON.stringify(NTS));
+}
+
+// ════════════════════════════════════════════
+//  RENDER ALL
+// ════════════════════════════════════════════
+function renderAll() {
+  renderStats();
+  renderCls();
+  renderNotes();
+  renderToday();
+  renderSubjFilter();
+  renderSubjects();
+  loadTTI();
+  syncDayTabs();
+}
+
+// ════════════════════════════════════════════
+//  STATS — 100% accurate from arrays
+// ════════════════════════════════════════════
+function renderStats() {
+  // Classes = exact count of class entries
+  document.getElementById('st-cls').textContent = CLS.length;
+  // Notes = exact count of note entries
+  document.getElementById('st-nts').textContent = NTS.length;
+  // Subjects = unique subject names (case-insensitive) across both
+  var s = new Set();
+  CLS.forEach(function(c){ if(c.name)    s.add(c.name.trim().toLowerCase()); });
+  NTS.forEach(function(n){ if(n.subject) s.add(n.subject.trim().toLowerCase()); });
+  document.getElementById('st-sub').textContent = s.size;
+}
+
+// ════════════════════════════════════════════
+//  PAGE NAVIGATION — single function, no bugs
+// ════════════════════════════════════════════
+function switchPage(name) {
+  // Close all overlays first
+  document.getElementById('confirm-overlay').classList.remove('show');
+  document.getElementById('img-viewer').classList.remove('show');
+  document.getElementById('wa-prompt').classList.remove('show');
+
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+
+  // Show target page
+  var page = document.getElementById('page-' + name);
+  if (!page) { // fallback to home if page not found
+    document.getElementById('page-home').classList.add('active');
+    name = 'home';
+  } else {
+    page.classList.add('active');
+  }
+
+  // Scroll to top
+  document.getElementById('main-scroll').scrollTop = 0;
+
+  // Update bottom nav
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  var navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+
+  currentPage = name;
+}
+
+// ════════════════════════════════════════════
+//  DAY TABS — sync active tab with dayFilt
+// ════════════════════════════════════════════
+function syncDayTabs() {
+  document.querySelectorAll('.day-tab').forEach(function(t){
+    t.classList.toggle('active', t.dataset.d === dayFilt);
+  });
+}
+
+function selDay(el) {
+  dayFilt = el.dataset.d;
+  syncDayTabs();
+  renderCls();
+}
+
+// ════════════════════════════════════════════
+//  CLASSES
+// ════════════════════════════════════════════
+async function addCls() {
+  var name  = document.getElementById('c-name').value.trim();
+  var day   = document.getElementById('c-day').value;
+  var start = document.getElementById('c-start').value;
+  var end   = document.getElementById('c-end').value;
+  var room  = document.getElementById('c-room').value.trim();
+  if (!name || !start) { toast('⚠️ Please enter subject and time!'); return; }
+  var btn = document.getElementById('cls-save-btn');
+  btn.innerHTML = '<span class="spinner"></span>Saving...'; btn.disabled = true;
+  try {
+    var payload = {name,day,start,end,room,color:selColor};
+    if (isOnline) { var d = await apiFetch('/classes',{method:'POST',body:JSON.stringify(payload)}); CLS.push(d.data); }
+    else { CLS.push(Object.assign({},payload,{_id:String(Date.now())})); }
+    localStorage.setItem('ss_c', JSON.stringify(CLS));
+    renderAll(); hideM('m-cls');
+    document.getElementById('c-name').value = '';
+    document.getElementById('c-room').value = '';
+    toast('✅ Class added!');
+  } catch(e) { toast('❌ ' + e.message); }
+  finally { btn.innerHTML = 'Add Class'; btn.disabled = false; }
+}
+
+function confirmDelCls(id, name) {
+  openConfirm('🗑️','Remove Class?',
+    'Remove <span class="confirm-hl">'+name+'</span> from timetable?',
+    'Yes, Remove', function(){ doDelCls(id); });
+}
+async function doDelCls(id) {
+  try { if(isOnline) await apiFetch('/classes/'+id,{method:'DELETE'}); } catch(_){}
+  CLS = CLS.filter(function(c){ return (c._id||c.id) !== id; });
+  localStorage.setItem('ss_c', JSON.stringify(CLS));
+  renderAll(); toast('🗑 Class removed');
+}
+
+function renderCls() {
+  var el = document.getElementById('cls-list');
+  var f = dayFilt==='All' ? CLS.slice() : CLS.filter(function(c){ return c.day===dayFilt; });
+  f.sort(function(a,b){ return a.start.localeCompare(b.start); });
+  if (!f.length) {
+    el.innerHTML = '<div class="empty-s"><div class="ei">📭</div>' +
+      '<div class="et">No classes on '+(dayFilt==='All'?'any day yet':dayFilt)+'</div>' +
+      '<div class="es">Tap \"+ Add Class\" to get started</div></div>';
+    return;
+  }
+  el.innerHTML = f.map(function(c){
+    var id = c._id||c.id;
+    var sn = (c.name||'').replace(/'/g,"\\'");
+    return '<div class="class-card">' +
+      '<div class="class-bar" style="background:'+c.color+'"></div>' +
+      '<div class="class-info">' +
+        '<div class="class-name">'+c.name+'</div>' +
+        '<div class="class-meta">'+c.day+' · '+c.start+'–'+c.end+'</div>' +
+        (c.room?'<div class="class-room">📍 '+c.room+'</div>':'') +
+      '</div>' +
+      '<div class="icon-btn" onclick="confirmDelCls(\''+id+'\',\''+sn+'\')">🗑</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderToday() {
+  var DN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var today = DN[new Date().getDay()];
+  var tc = CLS.filter(function(c){ return c.day===today; }).sort(function(a,b){ return a.start.localeCompare(b.start); });
+  var el = document.getElementById('td-list');
+  if (!tc.length) {
+    el.innerHTML = '<div class="empty-s"><div class="ei">📭</div><div class="et">No classes today</div><div class="es">Add classes in the Timetable tab</div></div>';
+    return;
+  }
+  el.innerHTML = tc.map(function(c){
+    return '<div class="today-class">' +
+      '<div class="tc-dot" style="background:'+c.color+'"></div>' +
+      '<div style="flex:1"><div class="tc-sub">'+c.name+'</div>' +
+      '<div class="tc-time">'+c.start+'–'+c.end+(c.room?' · '+c.room:'')+'</div></div></div>';
+  }).join('');
+}
+
+// ════════════════════════════════════════════
+//  TIMETABLE IMAGE
+// ════════════════════════════════════════════
+// Expand placeholder on first click, open file picker on second click
+var ttImgExpanded = false;
+function ttImgPlaceholderClick(e) {
+  var ph = document.getElementById('tt-img-ph');
+  if (!ttImgExpanded) {
+    // First tap — expand
+    ttImgExpanded = true;
+    ph.classList.add('expanded');
+    document.getElementById('tt-img-collapse').style.display = 'flex';
+  } else {
+    // Second tap — open file picker
+    document.getElementById('tt-img-in').click();
+  }
+}
+function collapseTTImg() {
+  ttImgExpanded = false;
+  var ph = document.getElementById('tt-img-ph');
+  ph.classList.remove('expanded');
+}
+
+function uploadTTImg(e) {
+  var f = e.target.files[0]; if(!f) return;
+  var r = new FileReader();
+  r.onload = function(ev){ TTI=ev.target.result; localStorage.setItem('ss_i',TTI); loadTTI(); collapseTTImg(); toast('🖼️ Timetable image saved!'); };
+  r.readAsDataURL(f);
+}
+function replaceTTImg(e) {
+  var f = e.target.files[0]; if(!f) return;
+  var r = new FileReader();
+  r.onload = function(ev){ TTI=ev.target.result; localStorage.setItem('ss_i',TTI); loadTTI(); document.getElementById('viewer-img').src=TTI; toast('🔄 Replaced!'); };
+  r.readAsDataURL(f);
+}
+function loadTTI() {
+  var box=document.getElementById('tt-img-box');
+  var prev=document.getElementById('tt-img-prev');
+  var ph=document.getElementById('tt-img-ph');
+  var info=document.getElementById('tt-img-info');
+  var acts=document.getElementById('tt-img-actions');
+  if(TTI){
+    box.classList.add('has-img');
+    prev.src=TTI; prev.style.display='block';
+    if(info) info.style.display='block';
+    if(acts) acts.style.display='flex';
+    ph.style.display='none';
+  } else {
+    box.classList.remove('has-img');
+    prev.style.display='none';
+    if(info) info.style.display='none';
+    if(acts) acts.style.display='none';
+    ph.style.display='flex';
+  }
+}
+function openViewer(mode,src) {
+  vMode=mode||'tt';
+  var s=src||TTI; if(!s) return;
+  document.getElementById('viewer-img').src=s;
+  document.getElementById('iv-acts').style.display=vMode==='tt'?'flex':'none';
+  document.getElementById('img-viewer').classList.add('show');
+}
+function closeViewer(){ document.getElementById('img-viewer').classList.remove('show'); }
+function confirmRemoveTTImg() {
+  document.getElementById('img-viewer').classList.remove('show');
+  setTimeout(function(){
+    openConfirm('🖼️','Remove Image?','Remove your timetable photo? You can upload a new one anytime.','Yes, Remove',
+      function(){ TTI=null; localStorage.removeItem('ss_i'); loadTTI(); toast('🗑 Image removed'); });
+  }, 100);
+}
+
+// ════════════════════════════════════════════
+//  NOTES
+// ════════════════════════════════════════════
+function selFile(e) {
+  var f=e.target.files[0]; if(!f) return;
+  selFileObj=f; selFN=f.name;
+  var r=new FileReader();
+  r.onload=function(ev){ selFD=ev.target.result; document.getElementById('fd-nm').textContent='✅ '+f.name; };
+  r.readAsDataURL(f);
+}
+async function addNote() {
+  var title=document.getElementById('n-title').value.trim();
+  var subject=document.getElementById('n-subj').value.trim();
+  if(!title||!subject){ toast('⚠️ Fill title and subject!'); return; }
+  var btn=document.getElementById('note-save-btn');
+  btn.innerHTML='<span class="spinner"></span>Saving...'; btn.disabled=true;
+  try {
+    var ext=selFN?selFN.split('.').pop().toLowerCase():'';
+    var type=['pdf'].includes(ext)?'pdf':['jpg','jpeg','png','gif','webp'].includes(ext)?'img':['doc','docx'].includes(ext)?'doc':'other';
+    var newNote;
+    if(isOnline && selFileObj){
+      var fd=new FormData(); fd.append('title',title); fd.append('subject',subject); fd.append('file',selFileObj);
+      var res=await fetch(API+'/notes',{method:'POST',body:fd});
+      var d=await res.json(); if(!d.success) throw new Error(d.message); newNote=d.data;
+    } else if(isOnline){
+      var d2=await apiFetch('/notes',{method:'POST',body:JSON.stringify({title,subject})}); newNote=d2.data;
+    } else {
+      newNote={_id:String(Date.now()),title,subject,type,fileName:selFN||null,fileData:selFD||null,
+        size:selFD?Math.round(selFD.length*.75/1024)+' KB':null};
+    }
+    NTS.unshift(newNote);
+    localStorage.setItem('ss_n', JSON.stringify(NTS));
+    renderAll(); hideM('m-note');
+    document.getElementById('n-title').value='';
+    document.getElementById('n-subj').value='';
+    document.getElementById('fd-nm').textContent='';
+    selFD=null; selFN=null; selFileObj=null;
+    toast('📎 Note saved!');
+  } catch(e){ toast('❌ '+e.message); }
+  finally { btn.innerHTML='Save Note'; btn.disabled=false; }
+}
+function confirmDelNote(id,title){
+  openConfirm('📄','Delete Note?','Delete <span class="confirm-hl">'+title+'</span>? File will also be removed.','Yes, Delete',function(){ doDelNote(id); });
+}
+async function doDelNote(id){
+  try{ if(isOnline) await apiFetch('/notes/'+id,{method:'DELETE'}); }catch(_){}
+  NTS=NTS.filter(function(n){ return (n._id||n.id)!==id; });
+  localStorage.setItem('ss_n', JSON.stringify(NTS));
+  renderAll(); toast('🗑 Note deleted');
+}
+function selSubj(el){
+  document.querySelectorAll('.subj-chip').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active'); subjFilt=el.dataset.s; renderNotes();
+}
+function renderSubjFilter(){
+  var s=[...new Set(NTS.map(function(n){ return n.subject; }))];
+  document.getElementById('subj-filter').innerHTML=
+    '<div class="subj-chip active" data-s="All" onclick="selSubj(this)">All</div>'+
+    s.map(function(x){ return '<div class="subj-chip" data-s="'+x+'" onclick="selSubj(this)">'+x+'</div>'; }).join('');
+  document.getElementById('sdl').innerHTML=s.map(function(x){ return '<option value="'+x+'">'; }).join('');
+}
+var ICONS={pdf:'📄',img:'🖼️',doc:'📝',other:'📁'};
+function renderNotes(){
+  var q=document.getElementById('srch').value.toLowerCase();
+  var f=NTS.filter(function(n){
+    var ms=subjFilt==='All'||n.subject===subjFilt;
+    var mq=!q||n.title.toLowerCase().includes(q)||n.subject.toLowerCase().includes(q)||(n.fileName||'').toLowerCase().includes(q);
+    return ms&&mq;
+  });
+  var g=document.getElementById('notes-grid');
+  if(!f.length){
+    g.innerHTML='<div class="empty-s" style="grid-column:1/-1"><div class="ei">📭</div>' +
+      '<div class="et">'+(q?'No results':'No notes yet')+'</div>' +
+      '<div class="es">'+(q?'Try different keywords':'Tap \"+ Add\" to save your first note')+'</div></div>';
+    return;
+  }
+  g.innerHTML=f.map(function(n){
+    var id=n._id||n.id; var t=n.type||'other';
+    var st=(n.title||'').replace(/'/g,"\\'");
+    return '<div class="note-card '+t+'" onclick="openNote(\''+id+'\')">' +
+      '<button class="note-del" onclick="event.stopPropagation();confirmDelNote(\''+id+'\',\''+st+'\')">✕</button>' +
+      '<div class="note-icon">'+(ICONS[t]||'📁')+'</div>' +
+      '<div class="note-name">'+n.title+'</div>' +
+      '<div class="note-sub">📚 '+n.subject+'</div>' +
+      (n.size?'<div class="note-sz">'+n.size+'</div>':'') +
+    '</div>';
+  }).join('');
+}
+function openNote(id){
+  var n=NTS.find(function(x){ return (x._id||x.id)===id; }); if(!n) return;
+  if(n.fileUrl){ window.open(n.fileUrl,'_blank'); }
+  else if(n.fileData){
+    if(n.type==='img'){ openViewer('note',n.fileData); }
+    else { var a=document.createElement('a'); a.href=n.fileData; a.download=n.fileName||n.title; a.click(); }
+  } else { toast('📝 '+n.title+' · '+n.subject); }
+}
+
+// ════════════════════════════════════════════
+//  SUBJECTS PAGE — shows all unique subjects
+//  with their classes + notes underneath
+// ════════════════════════════════════════════
+function getSubjects() {
+  var map = {}; // key=lowercase, value={display, classes[], notes[], color}
+  var colors = ['#ff6b35','#7c5cbf','#34d399','#f9c74f','#ff4d6d','#38bdf8'];
+  var ci = 0;
+  CLS.forEach(function(c){
+    var key = (c.name||'').trim().toLowerCase();
+    if(!key) return;
+    if(!map[key]) map[key] = {display:c.name.trim(), classes:[], notes:[], color:c.color||colors[ci++%colors.length]};
+    map[key].classes.push(c);
+  });
+  NTS.forEach(function(n){
+    var key = (n.subject||'').trim().toLowerCase();
+    if(!key) return;
+    if(!map[key]) map[key] = {display:n.subject.trim(), classes:[], notes:[], color:colors[ci++%colors.length]};
+    map[key].notes.push(n);
+  });
+  return map;
+}
+
+function renderSubjects(){
+  var map = getSubjects();
+  var keys = Object.keys(map).sort();
+  var el = document.getElementById('subjects-list');
+  if(!keys.length){
+    el.innerHTML='<div class="empty-s"><div class="ei">📚</div><div class="et">No subjects yet</div><div class="es">Add classes or notes to see subjects here</div></div>';
+    return;
+  }
+  el.innerHTML='<div class="subject-list">'+keys.map(function(k){
+    var s=map[k];
+    var cnt=(s.classes.length?s.classes.length+' class'+(s.classes.length>1?'es':''):'')+(s.classes.length&&s.notes.length?' · ':'')+
+           (s.notes.length?s.notes.length+' note'+(s.notes.length>1?'s':''):'');
+    return '<div class="subject-row" onclick="openSubject(\''+k.replace(/'/g,"\\'")+'\')">' +
+      '<div class="subj-dot" style="background:'+s.color+'"></div>' +
+      '<div class="subj-row-name">'+s.display+'</div>' +
+      '<div class="subj-row-count">'+cnt+'</div>' +
+      '<span style="color:var(--text2);font-size:16px">›</span>' +
+    '</div>';
+  }).join('')+'</div>';
+}
+
+function openSubject(key) {
+  var map = getSubjects();
+  var s = map[key]; if(!s) return;
+  document.getElementById('subj-detail-title').textContent = s.display;
+  var html = '';
+  // Classes section
+  html += '<div class="subj-section"><div class="sec-title">📅 Classes ('+s.classes.length+')</div>';
+  if(!s.classes.length){
+    html += '<div class="empty-s" style="padding:16px"><div class="et">No classes for this subject</div></div>';
+  } else {
+    html += s.classes.map(function(c){
+      var id=c._id||c.id; var sn=(c.name||'').replace(/'/g,"\\'");
+      return '<div class="class-card">' +
+        '<div class="class-bar" style="background:'+c.color+'"></div>' +
+        '<div class="class-info"><div class="class-name">'+c.name+'</div>' +
+        '<div class="class-meta">'+c.day+' · '+c.start+'–'+c.end+'</div>' +
+        (c.room?'<div class="class-room">📍 '+c.room+'</div>':'')+'</div>' +
+        '<div class="icon-btn" onclick="confirmDelCls(\''+id+'\',\''+sn+'\')">🗑</div>' +
+      '</div>';
+    }).join('');
+  }
+  html += '</div>';
+  // Notes section
+  html += '<div class="subj-section"><div class="sec-title">📂 Notes ('+s.notes.length+')</div>';
+  if(!s.notes.length){
+    html += '<div class="empty-s" style="padding:16px"><div class="et">No notes for this subject</div></div>';
+  } else {
+    html += '<div class="note-grid">'+s.notes.map(function(n){
+      var id=n._id||n.id; var t=n.type||'other'; var st=(n.title||'').replace(/'/g,"\\'");
+      return '<div class="note-card '+t+'" onclick="openNote(\''+id+'\')">' +
+        '<button class="note-del" onclick="event.stopPropagation();confirmDelNote(\''+id+'\',\''+st+'\')">✕</button>' +
+        '<div class="note-icon">'+(ICONS[t]||'📁')+'</div>' +
+        '<div class="note-name">'+n.title+'</div>' +
+        '<div class="note-sub">📚 '+n.subject+'</div>' +
+        (n.size?'<div class="note-sz">'+n.size+'</div>':'') +
+      '</div>';
+    }).join('')+'</div>';
+  }
+  html += '</div>';
+  document.getElementById('subj-detail-content').innerHTML = html;
+  switchPage('subject-detail');
+}
+
+// ════════════════════════════════════════════
+//  CONFIRM DIALOG
+// ════════════════════════════════════════════
+function openConfirm(icon, title, msg, btnLabel, onConfirm){
+  document.getElementById('c-icon').textContent = icon;
+  document.getElementById('c-title').textContent = title;
+  document.getElementById('c-msg').innerHTML = msg;
+  var ok = document.getElementById('c-ok-btn');
+  ok.textContent = btnLabel;
+  _pendingAction = onConfirm;
+  ok.onclick = function(){ var fn=_pendingAction; closeConfirm(); if(fn) fn(); };
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+function closeConfirm(){
+  document.getElementById('confirm-overlay').classList.remove('show');
+  _pendingAction = null;
+}
+document.getElementById('confirm-overlay').addEventListener('click', function(e){
+  if(e.target === this) closeConfirm();
+});
+
+// ════════════════════════════════════════════
+//  MISC
+// ════════════════════════════════════════════
+function selClr(el){
+  document.querySelectorAll('.cdot').forEach(function(d){ d.classList.remove('sel'); });
+  el.classList.add('sel'); selColor=el.dataset.c;
+}
+function showM(id){ document.getElementById(id).classList.add('show'); }
+function hideM(id){ document.getElementById(id).classList.remove('show'); }
+function closeMClick(e, id){ if(e.target.classList.contains('modal-overlay')) hideM(id); }
+
+var _tt;
+function toast(msg){
+  var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+
+// Export and Import removed
+function confirmClearAll(){
+  openConfirm('⚠️','Clear All Data?',
+    'Permanently delete <span class="confirm-hl">all classes and notes</span>? This cannot be undone.',
+    'Yes, Clear Everything', doClearAll);
+}
+async function doClearAll(){
+  try{
+    if(isOnline){
+      for(var c of CLS){ try{ await apiFetch('/classes/'+(c._id||c.id),{method:'DELETE'}); }catch(_){} }
+      for(var n of NTS){ try{ await apiFetch('/notes/'+(n._id||n.id),{method:'DELETE'}); }catch(_){} }
+    }
+  }catch(_){}
+  CLS=[]; NTS=[]; TTI=null;
+  localStorage.removeItem('ss_c'); localStorage.removeItem('ss_n'); localStorage.removeItem('ss_i');
+  renderAll(); switchPage('home'); toast('🗑 All data cleared');
+}
+
+// ════════════════════════════════════════════
+//  WHATSAPP SIMULATION
+// ════════════════════════════════════════════
+function simulateWA(){
+  var files=['Chapter5_Notes.pdf','PhysicsFormulas.jpg','MathDiagram.png','LabReport.docx','HistorySummary.pdf'];
+  waFile=files[Math.floor(Math.random()*files.length)];
+  document.getElementById('wa-file-nm').textContent='📄 '+waFile;
+  document.getElementById('wa-prompt').classList.add('show');
+  setTimeout(function(){ if(document.getElementById('wa-prompt').classList.contains('show')) dismissWA(); },8000);
+}
+function saveWAFile(){
+  dismissWA();
+  document.getElementById('n-title').value=waFile.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
+  document.getElementById('n-subj').value='';
+  showM('m-note'); toast('📲 Fill in the subject and tap Save!');
+}
+function dismissWA(){ document.getElementById('wa-prompt').classList.remove('show'); }
+</script>
+</body>
+</html>
