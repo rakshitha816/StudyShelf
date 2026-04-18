@@ -2,13 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Study Shelf</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0f0e17;--surface:#1a1929;--surface2:#232235;--accent:#ff6b35;--accent2:#7c5cbf;--accent3:#34d399;--text:#fffffe;--text2:#a7a9be;--border:rgba(255,255,255,0.08);--card:#1e1d2e;--danger:#ff4d6d;--warn:#f9c74f}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;user-select:none}
+body{
+font-family:'Outfit',sans-serif;
+background:var(--bg);
+color:var(--text);
+min-height:100vh;
+width:100%;
+overflow-x:hidden;
+overflow-y:auto;
+user-select:none;
+}
 
 /* SPLASH */
 #splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s,transform .6s}
@@ -23,7 +32,12 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);heig
 @keyframes loadbar{from{width:0}to{width:100%}}
 
 /* APP SHELL */
-#app{display:none;flex-direction:column;height:100vh}
+#app{
+display:none;
+flex-direction:column;
+min-height:100vh;
+width:100%;
+}
 #app.show{display:flex}
 
 /* TOPBAR */
@@ -43,7 +57,18 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);heig
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* BOTTOM NAV */
-.bottomnav{display:flex;background:var(--surface);border-top:1px solid var(--border);padding:8px 4px 10px;flex-shrink:0;position:relative;z-index:10}
+.bottomnav{
+display:flex;
+background:var(--surface);
+border-top:1px solid var(--border);
+padding:8px 4px 10px;
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+z-index:999;
+flex-shrink:0;
+}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:8px 0;color:var(--text2);font-size:11px;font-weight:500;transition:color .2s;border:none;background:none;font-family:'Outfit',sans-serif}
 .nav-item .ni{font-size:22px;line-height:1}
 .nav-item.active{color:var(--accent)}
@@ -255,6 +280,21 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);heig
 
 .main::-webkit-scrollbar{width:4px}
 .main::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:99px}
+html, body {
+width: 100%;
+max-width: 100%;
+overflow-x: hidden;
+}
+
+.main{
+padding-bottom:100px;
+}
+
+@supports (padding: max(0px)) {
+.bottomnav {
+padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+}
 </style>
 </head>
 <body>
