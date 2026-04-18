@@ -1,7 +1,7 @@
 // ============================================================
 //  STUDY SHELF APP — Node.js + Express + MongoDB Backend
 // ============================================================
-require('dotenv').config(); // load .env ONCE at the top
+require('dotenv').config();
 
 const express  = require('express');
 const mongoose = require('mongoose');
@@ -13,8 +13,6 @@ const fs       = require('fs');
 const app = express();
 
 // ── Middleware ───────────────────────────────────────────────
-const cors = require("cors");
-
 app.use(cors({
   origin: [
     "http://localhost:3000",
@@ -22,6 +20,7 @@ app.use(cors({
   ],
   credentials: true
 }));
+
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -98,9 +97,9 @@ app.get('/', async (req, res) => {
       classes: classes,
       notes:   notes,
       endpoints: {
-        classes: 'http://localhost:5000/api/classes',
-        notes:   'http://localhost:5000/api/notes',
-        backup:  'http://localhost:5000/api/backup'
+        classes: 'https://studyshelf-production.up.railway.app/api/classes',
+        notes:   'https://studyshelf-production.up.railway.app/api/notes',
+        backup:  'https://studyshelf-production.up.railway.app/api/backup'
       }
     });
   } catch (err) {
